@@ -1,0 +1,189 @@
+#!/bin/bash
+
+version="1.0"
+programName=`echo $0|rev|cut -d '/' -f1|rev`
+options="clqut"
+
+printUsage() {
+    echo "Usage: "
+    echo "$programName [-h|-v]"
+    echo "$programName [-$options] [exercise number]"
+    echo "Compile the exercise sheet. If the exercise number is not supplied it is asked for."
+    echo "The exercise number do not actually need to be a number, but it must be the name of the .tex file you are trying to compile, without extension"
+    echo "Options:
+-h: print this help and exit
+-v: print version and exit
+-c: clean auxiliary files at the end
+-l: don't generate the solution
+-q: quiet, display no information (you will still see errors)
+-u: don't generate the \"übungsblatt\" without solutions
+-t: use terminal even if graphical dialogs are detected"
+    echo "Exit codes:
+0 success;
+error flags:
+1 tex generation failed
+2 clean failed
+4 usage error"
+}
+
+printVersion() {
+    echo "$programName version $version (called as $0)."
+    echo "This software is released into the public domain, see \"LICENSE\" for further details."
+}
+
+# call this when an error/warning is raised
+emitError() {
+    errorFlag=on
+    if [[ -z $display ]]; then
+        >&2 echo -e "\033[0;31mError code $1: $2\033[0m"
+    elif [[ $display == "kdialog" ]]; then
+        kdialog --error "Error code $1:\n$2"
+    fi
+    exitCode=$(( $exitCode | $1 ))
+}
+
+# Display a message stating whether there were errers/warnings before or not
+# This is only guaranteed to work if emitError is used on error
+warnErrors() {
+    if [[ -z $display ]]; then
+        if [ "$errorFlag" = "on" ]
+        then echo -e "\033[0;31mWarning: there were errors\033[0m"
+        else echo -e "\033[0;32mNo errors\033[0m"
+        fi
+    elif [[ $display == "kdialog" ]]; then
+        if [ "$errorFlag" = "on" ]
+        then kdialog --error "Warning: there were errors"
+        else kdialog --msgbox "No errors reported.\nCompilation may still have failed:\nrun from the command line and check\n the output if the result is unexpected"
+        fi
+    fi
+}
+
+# Print an information message
+printMessage() {
+    if [ "$verbose" = "on" ]; then
+        if [[ -z $display ]]
+        then echo "$1"
+        fi
+    elif [[ $display == "kdialog" ]]; then
+        kdialog --passivepopup "$1" 1
+    fi
+}
+
+# Fatal error handling; currently simply quit returning the current errorcode
+fatal() {
+    exit $exitCode
+}
+
+# Check that the number of arguments is correct
+# Ask for missing information
+number=""
+checkArgs() {
+    if [ "$1" -ge 2 ]; then
+        emitError 4 "Only one argument is accepted ($1 provided)"
+        printUsage >&2
+        fatal
+    fi
+    if [ "$1" -le 0 ]; then
+        getInput "Select exercise sheet number..."
+        number=$getInputValue
+    else
+        number=$2
+    fi
+}
+
+# Used in the function below
+declare getInputValue
+# Get some input, depenindg on arguments and options provided on the command line, and possibly on the existence of a graphical session
+getInput() {
+    if [[ -z $display ]]; then
+        echo "$1"
+        read getInputValue
+    elif [[ $display == "kdialog" ]]; then
+        getInputValue=`kdialog --inputbox "$1"`
+        checklistReturn=`kdialog --checklist "Select actions" l "Generate exercise sheet with solution" $solution  u "Generate exercise sheet without solution" $exercise c "Clean latex generated files" $clean`
+        clean=off
+        solution=off
+        exercise=off
+        for item in $checklistReturn; do
+            case $item in
+                \"c\") clean=on;;
+                \"l\") solution=on;;
+                \"u\") exercise=on;;
+            esac
+        done
+    fi
+}
+
+# Detect whether which kind of I/O should be used
+checkDialog() {
+    if [[ ( -z $DISPLAY ) || ( $textTerminal == "on" ) ]]; then     # No GUI, or terminal requested from command line
+        display=""
+    elif hash kdialog 2>/dev/null; then                         # kdialog is present, default choice
+        display=kdialog
+    elif hash zenity 2>/dev/null; then                          # zenity is present. All other functions must be updated to support zenity before enabling this
+        # display=zenity
+        display=""
+    else                                                        # There is a GUI, but no known dialog-displaying program, so fallback to terminal
+        display=""
+    fi
+}
+
+
+# defaults:
+verbose=on              # Be verbose
+solution=on             # Generate the solution
+exercise=on             # Generate the exercise sheet (without solution)
+clean=off               # Clean auxiliary files
+textTerminal=off        # Use a terminal even when a known dialog-displaying program exist
+
+# initial status
+declare display         # empty variable, used later to choose between dialog programs
+errorFlag=off           # No errors up to now (hopefully)
+exitCode=0              # Exit code for no errors
+
+# Detect existing dialog-displaying programs
+checkDialog
+
+# process options and act accordingly
+while getopts $options"hv" currentOption
+do
+    case $currentOption in
+	h) printUsage
+	   exit 0;;
+	v) printVersion
+           exit 0;;
+        c) clean=on;;
+        l) solution=off;;
+        q) verbose=off;;
+        u) exercise=off;;
+        t) textTerminal=on;;
+        *) emitError 4 "Unrecognised option, check that all possible options are managed correctly!"
+    esac
+done
+
+# Detect existing dialog-displaying programs, again: command line options may change the behaviour (but it is needed before for displaying errors properly)
+checkDialog
+
+shift $((OPTIND - 1))
+
+# Check command line arguments
+checkArgs $# $1
+
+# Do requested actions
+if [[ "$solution" = "on"  ]]; then
+    printMessage "Generating solution"
+    make NUM=$number solution > /dev/null || emitError 1 "Error while generating solution"
+fi
+
+if [[ "$exercise" = "on"  ]]; then
+    printMessage "Generating exercise without solution"
+    make NUM=$number nosolution > /dev/null || emitError 1 "Error while generating exercise sheet"
+fi
+
+if [[ "$clean" = "on"  ]]; then
+    printMessage "Cleaning auxiliary files"
+    make NUM=$number clean > /dev/null || emitError 2 "Error while cleaning"
+fi
+
+warnErrors
+exit $exitCode

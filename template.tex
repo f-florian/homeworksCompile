@@ -3,7 +3,9 @@
 \usepackage{blattStyle}
 
 % Anpassungen für das jeweilige Übungsblatt
-\newcommand\blattNummer{aoe}
+\ifthenelse{\isundefined\blattNummer{}}{
+  \newcommand\blattNummer{aoe}
+}{}
 \newcommand\abgabeDatum{33.-1.2119}
 \blattStyleSetErsteAufgabeNummer{-1}
 

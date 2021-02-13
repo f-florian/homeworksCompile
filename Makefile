@@ -1,11 +1,16 @@
 compilecmd=pdflatex -shell-escape -interaction=nonstopmode
 SOURCE=${NUM}
+SETNUM="\\newcommand\\blattNummer{$(SOURCE)}"
+PUTFILE="\\input{$(SOURCE).tex}"
+NOSOL="\\newcommand\\nosolution{}"
+SOLINPUT="$(SETNUM) $(PUTFILE)"
+NOSOLINPUT="$(NOSOL) $(SOLINPUT)"
 
 .PHONY: clean solution nosolution
 
 solution:
-	-$(compilecmd) $(SOURCE).tex
-	-$(compilecmd) $(SOURCE).tex
+	-$(compilecmd) $(SOLINPUT)
+	-$(compilecmd) $(SOLINPUT)
 	@mv $(SOURCE).pdf $(SOURCE)Loesung.pdf
 clean:
 	@rm -f $(SOURCE).aux
@@ -31,6 +36,6 @@ clean:
 	@rm -f texput.lo
 
 nosolution:
-	-$(compilecmd) "\newcommand\nosolution{}\input{$(SOURCE).tex}"
-	-$(compilecmd) "\newcommand\nosolution{}\input{$(SOURCE).tex}"
+	-$(compilecmd) $(NOSOLINPUT)
+	-$(compilecmd) $(NOSOLINPUT)
 	@mv $(SOURCE).pdf $(SOURCE)Uebungsblatt.pdf

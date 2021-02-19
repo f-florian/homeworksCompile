@@ -1,10 +1,13 @@
 compilecmd=pdflatex -shell-escape -interaction=nonstopmode
 SOURCE=${NUM}
-SETNUM="\\newcommand\\blattNummer{$(SOURCE)}"
+SETNUM="\\homeworkStyleSetNumber{$(SOURCE)}"
 PUTFILE="\\input{$(SOURCE).tex}"
-NOSOL="\\newcommand\\nosolution{}"
+NOSOL="\\homeworkStyleSolutionOff"
+
 SOLINPUT="$(SETNUM) $(PUTFILE)"
 NOSOLINPUT="$(NOSOL) $(SOLINPUT)"
+
+
 
 .PHONY: clean solution nosolution
 
@@ -33,7 +36,7 @@ clean:
 	@rm -f creationdate.lua
 	@rm -f creationdate.timestamp
 	@rm -f pdfa.xmpi
-	@rm -f texput.lo
+	@rm -f texput.log
 
 nosolution:
 	-$(compilecmd) $(NOSOLINPUT)

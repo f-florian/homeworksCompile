@@ -1,0 +1,128 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{homeworkStyle}[2020/02/27]
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{babel}
+\RequirePackage{exscale}
+\RequirePackage{amsmath,amsfonts,amssymb}
+\RequirePackage[thref, amsmath, amsthm, thmmarks]{ntheorem}
+\RequirePackage{a4wide}
+\RequirePackage{epic,eepic}
+\RequirePackage{graphicx} % einbinden von Grafiken mit \includegraphics
+\RequirePackage{url}
+\RequirePackage{mathtools}
+\RequirePackage{etoolbox}
+\RequirePackage{comment}
+\RequirePackage{ifthen}
+\RequirePackage{pgfplots}
+\RequirePackage{tikz}
+\RequirePackage{enumitem}
+\RequirePackage{mathtools}
+\RequirePackage{etoolbox}
+\RequirePackage[colorlinks]{hyperref}
+\RequirePackage[capitalize]{cleveref}
+\RequirePackage{url}
+
+% Page setup
+\pagestyle{empty}
+\parindent0em
+\parskip1ex
+\addtolength{\topmargin}{0cm}
+\addtolength{\oddsidemargin}{0cm}
+\addtolength{\textheight}{2cm}
+\addtolength{\textwidth}{0cm}
+
+% standard sets
+\newcommand\R{\ensuremath{\mathbb R}}
+\newcommand\N{\ensuremath{\mathbb N}}
+\newcommand\Z{\ensuremath{\mathbb Z}}
+
+% interval types
+\newcommand\icc[1]{\left[#1\right]}
+\newcommand\ico[1]{\left[#1\right[}
+\newcommand\ioc[1]{\left]#1\right]}
+\newcommand\ioo[1]{\left]#1\right[}
+
+% Setup homework number; default is 0
+\newcounter{homeworkNumber}
+\newcommand\homeworkStyleSetNumber[1]{\setcounter{homeworkNumber}{#1}}
+\homeworkStyleSetNumber{0}
+
+% Setup deadline date; default is "Warning: undefined deadline"
+\newcommand\deadlineDate{Warning: undefined deadline}
+\newcommand\homeworkStyleSetDeadlineDate[1]{\renewcommand\deadlineDate{#1}}
+
+% Use a counter for the exercises, and plovide functions for it; default is 1
+\newcounter{exerciseNumber}
+\newcommand\homeworkStyleSetFirstExercise[1]{
+  \setcounter{exerciseNumber}{#1}
+  \addtocounter{exerciseNumber}{-1}}
+\homeworkStyleSetFirstExercise{1}
+
+% In enumerate use small letters first, then roman number, and automatically reference them correctly with cleveref
+\renewcommand{\theenumi}{(\alph{enumi})\,}
+\renewcommand{\theenumii}{(\roman{enumii})\,}
+\renewcommand{\labelenumi}{\theenumi\,}
+\renewcommand{\labelenumii}{\theenumii\,}
+\crefname{enumerate}{}{}
+
+% Style for Definitions, etc.
+\theoremstyle{break}   % Titelzeile abgesetzt
+\theorembodyfont{\upshape}  % normaler Font f"ur Beispiel, Aufgabe
+\newtheorem{exercise}[exerciseNumber]{Exercise}
+\theoremstyle{plain}
+\newtheorem*{hint*}{Hint}
+
+\addto\captionsgerman{\renewcommand\proofname{Lösung}}
+\addto\captionsenglish{\renewcommand\proofname{Solution}}
+
+% Toggle solution (default on)
+\newcommand\homeworkStyleSolutionOff{\excludecomment{proof}}
+
+% Notation for vectors
+\newcommand\Matrix[1]{\ensuremath{\mathbf{#1}}}
+\newcommand\Vector[1]{\ensuremath{\mathbf{#1}}}
+\newcommand\transpose[1]{\ensuremath{#1^{\top}}}
+\newcommand\identity{\ensuremath{\Matrix{I}}}
+
+% Machine precision
+\newcommand\eps{\varepsilon}
+
+% e
+\newcommand\e{{\rm e}}
+
+% Operators-style
+\DeclareMathOperator{\spann}{span}
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\round}{round}
+\DeclareMathOperator{\supp}{supp}
+% Real and imaginary
+\DeclareMathOperator{\real}{Re}
+\DeclareMathOperator{\imaginary}{Im}
+
+% The following block makes the paired delimiter declared afterwards scale automatically in the non-starred version
+\newcommand\swapifbranches[3]{#1{#3}{#2}}
+\MHInternalSyntaxOn
+\patchcmd{\DeclarePairedDelimiter}{\@ifstar}{\swapifbranches\@ifstar}{}{}
+\MHInternalSyntaxOff
+
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
+
+% Title and info
+\renewcommand\maketitle{
+\parbox{25ex}{
+    Prof.~Dr.~S.~Sauter\\
+    Institut für Mathematik\\
+    Universität Zürich 
+  }
+\hfill \parbox{0.6\textwidth}{
+  \begin{center}
+    {\sffamily\LARGE\bfseries Numerik I}
+    {\sffamily\Large\bfseries \;\;--\;\; Homework \thehomeworkNumber}\\[1.5ex]
+    Deadline: \deadlineDate, 12:00 PM
+  \end{center}
+}
+%%% LAST SHEET 
+% Bitte Lösungen als pdf über das \textquotedblleft{}my\textquotedblright{} hochladen. Studierende mit Hauptfach Physik senden ihre Lösung als pdf per Email an \href{mailto:mmarcoli@physik.uzh.ch}{mmarcoli@physik.uzh.ch}. Es werden nur Lösungen von Studierenden korrigiert und gewertet, welche das Testat noch nicht erreicht haben.
+}

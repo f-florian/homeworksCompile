@@ -1,8 +1,8 @@
 #!/bin/bash
 
-version="1.0"
+version="1.1"
 programName=`echo $0|rev|cut -d '/' -f1|rev`
-options="clqut"
+options="clpqtu"
 
 printUsage() {
     echo "Usage: "
@@ -13,10 +13,11 @@ printUsage() {
     echo "Options:
 -h: print this help and exit
 -v: print version and exit
--c: clean auxiliary files at the end
+-c: clean auxiliary (LaTeX-generated) files at the end
+-p: purge all auxiliary (LaTeX-generated) files and exit
 -l: don't generate the solution
--q: quiet, display no information (you will still see errors)
--u: don't generate the \"übungsblatt\" without solutions
+-q: quiet, display no information (you will still see errors); also suppress makefile (and therefore LaTeX) output entirely.
+-u: don't generate the exercise sheet without solutions
 -t: use terminal even if graphical dialogs are detected"
     echo "Exit codes:
 0 success;
@@ -128,6 +129,29 @@ checkDialog() {
     fi
 }
 
+purgeTemporaries() {
+    rm -f *.aux
+    rm -f *.aux.diff
+    rm -f *.bbl
+    rm -f *.tex.bak
+    rm -f *.tex~
+    rm -f *.bcf
+    rm -f *.blg
+    rm -f *.lof
+    rm -f *.log
+    rm -f *.out
+    rm -f *.run.xml
+    rm -f *.tdo
+    rm -f *.tex.blg
+    rm -f *.thm
+    rm -f *.toc
+    rm -f *.xmpdata
+    #rm -f *.pdf
+    rm -f creationdate.lua
+    rm -f creationdate.timestamp
+    rm -f pdfa.xmpi
+    rm -f texput.log
+}
 
 # defaults:
 verbose=on              # Be verbose
@@ -152,6 +176,8 @@ do
 	   exit 0;;
 	v) printVersion
            exit 0;;
+        p) purgeTemporaries
+           exit 0;;
         c) clean=on;;
         l) solution=off;;
         q) verbose=off;;
@@ -169,20 +195,32 @@ shift $((OPTIND - 1))
 # Check command line arguments
 checkArgs $# $1
 
+if [[ "$verbose" = "on"  ]]; then
+    redirect=" > /dev/null"
+else
+    redirect=""
+fi
+
+makeCommand="make NUM=$number"
+
+
 # Do requested actions
 if [[ "$solution" = "on"  ]]; then
     printMessage "Generating solution"
-    make NUM=$number solution > /dev/null || emitError 1 "Error while generating solution"
+    command="$makecommand solution $redirect"
+    eval $command || emitError 1 "Error while generating solution"
 fi
 
 if [[ "$exercise" = "on"  ]]; then
     printMessage "Generating exercise without solution"
-    make NUM=$number nosolution > /dev/null || emitError 1 "Error while generating exercise sheet"
+    command="$makecommand nosolution $redirect"
+    eval $command || emitError 1 "Error while generating exercise sheet"
 fi
 
 if [[ "$clean" = "on"  ]]; then
     printMessage "Cleaning auxiliary files"
-    make NUM=$number clean > /dev/null || emitError 2 "Error while cleaning"
+    command="$makecommand clean $redirect"
+    eval $command || emitError 2 "Error while cleaning"
 fi
 
 warnErrors

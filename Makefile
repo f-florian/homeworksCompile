@@ -1,8 +1,8 @@
 compilecmd=pdflatex -shell-escape -interaction=nonstopmode
 SOURCE=${NUM}
-SETNUM="\\homeworkStyleSetNumber{$(SOURCE)}"
+SETNUM="\\newcommand\\makefileHomeworkNumber{$(SOURCE)}"
 PUTFILE="\\input{$(SOURCE).tex}"
-NOSOL="\\homeworkStyleSolutionOff"
+NOSOL="\\newcommand\\makefileSkipSolution{}"
 
 SOLINPUT="$(SETNUM) $(PUTFILE)"
 NOSOLINPUT="$(NOSOL) $(SOLINPUT)"

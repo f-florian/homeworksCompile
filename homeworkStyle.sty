@@ -46,7 +46,11 @@
 % Setup homework number; default is 0
 \newcounter{homeworkNumber}
 \newcommand\homeworkStyleSetNumber[1]{\setcounter{homeworkNumber}{#1}}
-\homeworkStyleSetNumber{0}
+\ifthenelse{\isundefined{\makefileHomeworkNumber{}}}{     % check if the Makefile provided this already.
+  \homeworkStyleSetNumber{0}
+}{
+  \homeworkStyleSetNumber{\makefileHomeworkNumber}
+}
 
 % Setup deadline date; default is "Warning: undefined deadline"
 \newcommand\deadlineDate{Warning: undefined deadline}
@@ -78,6 +82,9 @@
 
 % Toggle solution (default on)
 \newcommand\homeworkStyleSolutionOff{\excludecomment{proof}}
+\ifthenelse{\isundefined{\makefileSkipSolution}}{}{     % check if makefile asks for it.
+  \homeworkStyleSolutionOff
+}
 
 % Notation for vectors
 \newcommand\Matrix[1]{\ensuremath{\mathbf{#1}}}
@@ -111,18 +118,16 @@
 
 % Title and info
 \renewcommand\maketitle{
-\parbox{25ex}{
-    Prof.~Dr.~S.~Sauter\\
-    Institut für Mathematik\\
-    Universität Zürich 
-  }
-\hfill \parbox{0.6\textwidth}{
-  \begin{center}
-    {\sffamily\LARGE\bfseries Numerik I}
-    {\sffamily\Large\bfseries \;\;--\;\; Homework \thehomeworkNumber}\\[1.5ex]
-    Deadline: \deadlineDate, 12:00 PM
-  \end{center}
-}
-%%% LAST SHEET 
-% Bitte Lösungen als pdf über das \textquotedblleft{}my\textquotedblright{} hochladen. Studierende mit Hauptfach Physik senden ihre Lösung als pdf per Email an \href{mailto:mmarcoli@physik.uzh.ch}{mmarcoli@physik.uzh.ch}. Es werden nur Lösungen von Studierenden korrigiert und gewertet, welche das Testat noch nicht erreicht haben.
+    \begin{flushright}
+      Prof.~Name\\
+      Institut für Mathematik\\
+      Universität Zürich
+    \end{flushright}
+    \vspace{1ex}
+    \hfill
+    \begin{center}
+      {\sffamily\LARGE\bfseries Subject}
+      {\sffamily\Large\bfseries \;\;--\;\; Homework \thehomeworkNumber}\\[1.5ex]
+      Deadline: \deadlineDate, 1:00 PM
+    \end{center}
 }

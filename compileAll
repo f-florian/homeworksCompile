@@ -196,9 +196,9 @@ shift $((OPTIND - 1))
 checkArgs $# $1
 
 if [[ "$verbose" = "on"  ]]; then
-    redirect=" > /dev/null"
-else
     redirect=""
+else
+    redirect=" > /dev/null"
 fi
 
 makeCommand="make NUM=$number"
